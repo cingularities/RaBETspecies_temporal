@@ -11,7 +11,7 @@ Request Repository:
 [Workflow](cingularities/Images/SpeciesClassification.jpg)
 
 <img
-  src="cingularities/Images/SpeciesClassification.jpg"
+  src="/Images/SpeciesClassification.jpg"
   alt="Alt text"
   title="Optional title"
   style="display: inline-block; margin: 0 auto; max-width: 300px">
