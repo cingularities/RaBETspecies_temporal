@@ -1,4 +1,4 @@
-# RaBETssDataProcessing
+# RaBET Species Specific Data Processing
 
 [Multi-Temporal LiDAR and Hyperspectral Data Fusion for Classification of Semi-Arid Woody Cover Species](https://doi.org/10.3390/rs14122896) 
 
