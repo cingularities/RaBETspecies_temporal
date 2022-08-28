@@ -9,9 +9,3 @@ Request Repository:
 [Data Drive](https://drive.google.com/drive/folders/1GH-YNfj9L6DLQEoDzcBDIeZO4oWICTFe?usp=sharing)
 
 [Workflow](cingularities/Images/SpeciesClassification.jpg)
-
-<img
-  src="/Images/SpeciesClassification.jpg"
-  alt="Alt text"
-  title="Optional title"
-  style="display: inline-block; margin: 0 auto; max-width: 300px">
