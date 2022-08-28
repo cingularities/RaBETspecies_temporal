@@ -8,4 +8,4 @@ cnorton1@arizona.edu
 Request Repository:
 [Data Drive](https://drive.google.com/drive/folders/1GH-YNfj9L6DLQEoDzcBDIeZO4oWICTFe?usp=sharing)
 
-[Workflow](cingularities/Images/SpeciesClassification.jpg)
+![Workflow](https://github.com/cingularities/Images/blob/main/SpeciesClassification.jpg)
