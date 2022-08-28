@@ -1,4 +1,6 @@
 # RaBET Species Specific Data Processing
+Cacti Index:
+[A Novel Spectral Index to Identify Cacti in the Sonoran Desert at Multiple Scales Using Multi-Sensor Hyperspectral Data Acquisitions](https://doi.org/10.3390/land11060786)
 
 [Multi-Temporal LiDAR and Hyperspectral Data Fusion for Classification of Semi-Arid Woody Cover Species](https://doi.org/10.3390/rs14122896) 
 
@@ -10,6 +12,3 @@ Request Repository:
 
 ![Workflow](https://github.com/cingularities/Images/blob/main/SpeciesClassification.jpg)
 
-
-Cacti Index:
-[A Novel Spectral Index to Identify Cacti in the Sonoran Desert at Multiple Scales Using Multi-Sensor Hyperspectral Data Acquisitions](https://doi.org/10.3390/land11060786)
