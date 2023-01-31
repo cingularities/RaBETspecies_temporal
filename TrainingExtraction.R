@@ -16,38 +16,43 @@ library(terra)
 library(dismo)
 #install.packages("e1071")
 #library(C50)
-setwd("P:/RaBET/Results/")
-NEON_2017_indices <-stack("P:/RaBET/Results/NEON_2017_indices_JORN_resampled.tif") 
-NEON_2018_indices <-stack("D:/projects/RaBET/NEON_JORN/NEON_2018_mask_JORN.tif") 
-NEON_2019_indices <-stack("D:/projects/RaBET/NEON_JORN/NEON_2019_mask_JORN.tif") 
+setwd("//snow/projects/RaBET/RaBET_species/NEON_FINAL/SRER/")
+setwd("//snow/projects/RaBET/RaBET_species/NEON_FINAL/SRER/FinalOutputs")
+NEON_2017_indices <-stack("//snow/projects/RaBET/RaBET_species/NEON_FINAL/SRER/FinalOutputs/NEON_SRER_indices_2017_mask.tif") 
+NEON_2019_indices <-stack("//snow/projects/RaBET/RaBET_species/NEON_FINAL/SRER/FinalOutputs/NEON_SRER_indices_2019_mask.tif") 
+NEON_2021_indices <-stack("//snow/projects/RaBET/RaBET_species/NEON_FINAL/SRER/FinalOutputs/NEON_SRER_indices_2021_mask.tif") 
+NEON_2018_indices <-stack("//snow/projects/RaBET/RaBET_species/NEON_FINAL/SRER/FinalOutputs/NEON_SRER_indices_2018_mask.tif") 
 
+NEON_indices <- stack(NEON_2021_indices,NEON_2018_indices,NEON_2017_indices)
 
-NEON_indices <- stack(NEON_2019_indices,NEON_2017_indices)
-
-names(NEON_indices) <- c('NDVI_2019','NDWI_2019','PRI_2019','SWIRI_2019','SAVI_2019',
-                         'PRI2_2019','CACTI_2019','CACTI2_2019','MTCI_2019','CI_2019',
-                         'CAI_2019','CELL_2019','CELL2_2019','NDNI_2019','CHM_2019',
+names(NEON_indices) <- c('NDVI_2021','NDWI_2021','PRI_2021','SWIRI_2021','SAVI_2021',
+                         'PRI2_2021','CACTI_2021','CACTI2_2021','MTCI_2021','CI_2021',
+                         'CAI_2021','CELL_2021','CELL2_2021','NDNI_2021','CHM_2021',
+                         'NDVI_2018','NDWI_2018','PRI_2018','SWIRI_2018','SAVI_2018',
+                         'PRI2_2018','CACTI_2018','CACTI2_2018','MTCI_2018','CI_2018',
+                         'CAI_2018','CELL_2018','CELL2_2018','NDNI_2018','CHM_2018',
                          'NDVI_2017','NDWI_2017','PRI_2017','SWIRI_2017','SAVI_2017',
                          'PRI2_2017','CACTI_2017','CACTI2_2017','MTCI_2017','CI_2017',
-                         'CAI_2017','CELL_2017','CELL2_2017','NDNI_2017','CHM_2019')
+                         'CAI_2017','CELL_2017','CELL2_2017','NDNI_2017','CHM_2017')
+gc()
 gc()
 
 #POINTS
-
+memory.limit(size=2620330)
+memory.size()
 ##TRAINING DATA
 #trainPoints <- shapefile("P:/RaBET/Subset/training/trainPoints_071321.shp")
-trainPoints <- shapefile("D:/projects/RaBET/NEON_JORN/JORN_training.shp") #when creating Pointsgons, make sure to create a code column as a double.
+trainPoints <- shapefile("//snow/projects/RaBET/RaBET_species/NEON_FINAL/SRER/Training/TrainData0913_PlusAC/TrainData0913PlusAC.shp") #when creating Pointsgons, make sure to create a code column as a double.
 ###TRAINING DATA
 trainPoints <- spTransform(trainPoints, crs(NEON_indices)) #making sure scenes overlap crs
-trainPoints$Id
+trainPoints$Code
 #make column numeric for rasterization
-trainPoints$Id <- as.numeric(trainPoints$Id)
+trainPoints$Code <- as.numeric(trainPoints$Code)
 #creating a raster of classes with similar resolution as training rasters
-
 
 ptm <- proc.time()
 
-classesPoints <- rasterize(trainPoints, NEON_indices, field = "Id") 
+classesPoints <- rasterize(trainPoints, NEON_indices, field = "Code") 
 
 proc.time() - ptm
 
@@ -100,17 +105,47 @@ gc()
 
 
 NEON_indices_mask <- raster::stack(masked_list)
+gc()
 trainingstack_indices <- addLayer(NEON_indices_mask, classesPoints) 
 gc()
+
+
 trainData_indices <- getValues(trainingstack_indices)
-trainData_indices <- as.data.frame(trainData_indices)
-trainData_indices <- na.omit(trainData_indices)
+stopCluster(cl)
+
+
+trainData_indices <- as.data.frame(trainData_indices) %>% na.omit()
+gc()
+                                              
 trainData_indices$class <- as.factor(trainData_indices$class)
+gc()
+
+trainData_indices$class
 #writeRaster(trainingstack_indices, filename ="trainingstack_indices_MNDWI.tif" )
 
-write.csv(trainData_indices, file= "JORN_trainingindices_041122.csv")
+write.csv(trainData_indices, file= "SRERtrainingindices_012823_with2018_no2019.csv")
 # Shut the cluster off 
-stopCluster(cl)
+
+
+
+
+getwd()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -175,6 +210,40 @@ write.csv(trainData_indices, file= "trainData_10042121_clean_ac.csv")
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ###GET TRAINING DATA
 ptm <- proc.time()
 
@@ -186,7 +255,7 @@ trainData_indices <- na.omit(trainData_indices)
 trainData_indices$Class <- as.factor(trainData_indices$Class)
 #writeRaster(trainingstack_indices, filename ="trainingstack_indices_NDVI.tif" )
 
-write.csv(trainData_indices, file= "JORN_training_012222.csv")
+write.csv(trainData_indices, file= "SRER_training_012222.csv")
 
 
 proc.time() - ptm
@@ -204,7 +273,7 @@ trainData_indices <- na.omit(trainData_indices)
 trainData_indices$class <- as.factor(trainData_indices$class)
 #writeRaster(trainingstack_indices, filename ="trainingstack_indices_NDVI.tif" )
 
-write.csv(trainData_indices, file= "JORN_2018_training_012122.csv")
+write.csv(trainData_indices, file= "SRER_2018_training_012122.csv")
 
 
 proc.time() - ptm
@@ -223,7 +292,7 @@ trainData_indices <- na.omit(trainData_indices)
 trainData_indices$class <- as.factor(trainData_indices$class)
 #writeRaster(trainingstack_indices, filename ="trainingstack_indices_NDVI.tif" )
 
-write.csv(trainData_indices, file= "JORN_2019_training_012122.csv")
+write.csv(trainData_indices, file= "SRER_2019_training_012122.csv")
 
 
 proc.time() - ptm
@@ -240,7 +309,7 @@ trainData_indices <- na.omit(trainData_indices)
 trainData_indices$class <- as.factor(trainData_indices$class)
 #writeRaster(trainingstack_indices, filename ="trainingstack_indices_NDVI.tif" )
 
-write.csv(trainData_indices, file= "JORN_training_012122.csv")
+write.csv(trainData_indices, file= "SRER_training_012122.csv")
 
 
 proc.time() - ptm

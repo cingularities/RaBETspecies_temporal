@@ -1,7 +1,7 @@
 library(tidyverse)
 setwd("P:/RaBET/Results/")
 ##Data Visualizati
-trainData_indices <- read.csv("P:/RaBET/Results/trainData_102021.csv") %>% dplyr::select(-c(MNDWI_2019,MNDWI_2018,MNDWI_2017,NDII_2019,NDII_2018,NDII_2017,X.1,X))
+trainData_indices <- read.csv("P:/RaBET/RaBET_species/Outputs/final_results/trainData_102021.csv") %>% dplyr::select(-c(MNDWI_2019,MNDWI_2018,MNDWI_2017,NDII_2019,NDII_2018,NDII_2017,X.1,X))
 
 names(trainData_indices) <- c('NDVI_2019','NDWI_2019','PRI_2019','SWIRI_2019','SAVI_2019', 
                               'PRI2_2019','CACTI_2019','CACTI2_2019','MTCI_2019','CI_2019',
