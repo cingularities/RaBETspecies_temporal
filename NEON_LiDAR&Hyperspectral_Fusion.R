@@ -14,16 +14,20 @@ library(broom)
 library(caret)
 library(terra)
 library(dismo)
+library(sf)
 #install.packages("e1071")
 #library(C50)
 
 #.libPaths()
 ##Import indices and Elevation Models
 # set working directory
-setwd("//snow/projects/RaBET/RaBET_species/NEON_FINAL/SRER/FinalOutputs/")
+setwd("//snow/projects/RaBET/RaBET_species/NEON_FINAL/SRER/")
 getwd()
 #Trait variables
 #area(variables)
+#LOAD ALL RASTERS FOR STACK
+DTM<- raster("//snow/projects/RaBET/RaBET_species/NEON_SRER/2021/lidar/DTM2021final_SRER.tif")
+
 NDVI_2017 <- raster('//snow/projects/RaBET/RaBET_species/NEON_FINAL/SRER/FinalOutputs/NDVI2017final.tif')
 NDWI_2017 <- raster('//snow/projects/RaBET/RaBET_species/NEON_FINAL/SRER/FinalOutputs/NDWI2017final.tif')
 PRI_2017 <- raster('//snow/projects/RaBET/RaBET_species/NEON_FINAL/SRER/FinalOutputs/PRI2017final.tif')
@@ -121,41 +125,39 @@ CHM_2021 <- raster('//snow/projects/RaBET/RaBET_species/NEON_FINAL/SRER/FinalOut
 #NDRE_2021 <- raster('//snow/projects/RaBET/RaBET_species/NEON_FINAL/SRER/FinalOutputs/NDRE2021final_SRER.tif')
 
 
-
-#NDRE_2018 <- setExtent(NDRE_2018, NDVI_2018)
-#NDRE_2018 <- resample(NDRE_2018, NDVI_2018)
-
-#SPRUCE_2018 <- setExtent(SPRUCE_2018, NDVI_2018)
-#SPRUCE_2018 <- resample(SPRUCE_2018, NDVI_2018)
+##if any;ayers are not in same extent or resolution, be careful it doesn't change layers see code below
 
 
-#CONIFER_2018 <- setExtent(CONIFER_2018, NDVI_2018)
-#CONIFER_2018 <- resample(CONIFER_2018, NDVI_2018)
+#CROP and mask or resample if needed, all layers must STACK
+getwd()
+tif<- stack('//snow/projects/RaBET/RaBET_species/NEON_WGER/NEON_WGER_indices_2018.tif')
 
-CHM_2021 <- setExtent(CHM_2021, NDVI_2021)
-CHM_2021 <- resample(CHM_2021, NDVI_2021)
+#load crop shapefile
+crop <- shapefile("//snow/projects/RaBET/RaBET_species/NEON_WGEW/WGER_crop.shp")
+plot(crop)
+e <- extent(crop)
 
-CHM_2020 <- setExtent(CHM_2020, NDVI_2020)
-CHM_2020 <- resample(CHM_2020, NDVI_2020)
+#crop and mask CHM based on respective index years
+CHM_2021_crop <- crop(CHM_2021, NDVI_2021)
+CHM_2021_mask <- mask(CHM_2021_crop, NDVI_2021)
 
-CHM_2019 <- setExtent(CHM_2019, NDVI_2019)
-CHM_2019 <- resample(CHM_2019, NDVI_2019)
+CHM_2020_crop <- crop(CHM_2020, NDVI_2020)
+CHM_2020_mask <- mask(CHM_2020_crop, NDVI_2020)
 
-CHM_2018 <- setExtent(CHM_2018, NDVI_2018)
-CHM_2018 <- resample(CHM_2018, NDVI_2018)
+CHM_2019_crop <- crop(CHM_2019, NDVI_2019)
+CHM_2019_mask <- mask(CHM_2019_crop, NDVI_2019)
 
-CHM_2017 <- setExtent(CHM_2017, NDVI_2017)
-CHM_2017 <- resample(CHM_2017, NDVI_2017)
+CHM_2018_crop <- crop(tif, NDVI_2018)
+CHM_2018_mask <- mask(CHM_2018_crop, NDVI_2018)
 
-#writeRaster(CHM_2021, file = 'crop_CHM2021_SRER_final.tif')
-#writeRaster(CHM_2020, file = 'crop_CHM2020_SRER_final.tif')
-#writeRaster(CHM_2019, file = 'crop_CHM2019_SRER_final.tif')
-#writeRaster(CHM_2018, file = 'crop_CHM2018_SRER_final.tif')
-#writeRaster(CHM_2017, file = 'crop_CHM2017_SRER_final.tif')
+CHM_2017_crop <- crop(CHM_2017, NDVI_2017)
+CHM_2017_mask <- mask(CHM_2017_crop, NDVI_2017)
+
 plot(NDVI_2020)
 plot(NDVI_2019)
 plot(NDVI_2018)
-getwd()
+
+#stack all layers
 NEON_2021 <- stack(NDVI_2021,NDWI_2021,PRI_2021,SWIRI_2021,SAVI_2021, 
                    PRI2_2021,CACTI_2021,CACTI2_2021,MTCI_2021,CI_2021,
                    CAI_2021,CELL_2021,CELL2_2021,NDNI_2021, CHM_2021)
@@ -164,28 +166,25 @@ NEON_2020 <- stack(NDVI_2020,NDWI_2020,PRI_2020,SWIRI_2020,SAVI_2020,
                    CAI_2020,CELL_2020,CELL2_2020,NDNI_2020, CHM_2020)
 NEON_2019 <- stack(NDVI_2019,NDWI_2019,PRI_2019,SWIRI_2019,SAVI_2019, 
                    PRI2_2019,CACTI_2019,CACTI2_2019,MTCI_2019,CI_2019,
-                   CAI_2019,CELL_2019,CELL2_2019,NDNI_2019,CHM_2019)
+                   CAI_2019,CELL_2019,CELL2_2019,NDNI_2019, CHM_2019)
 NEON_2018 <- stack(NDVI_2018,NDWI_2018,PRI_2018,SWIRI_2018,SAVI_2018, 
                    PRI2_2018,CACTI_2018,CACTI2_2018,MTCI_2018,CI_2018,
-                   CAI_2018,CELL_2018,CELL2_2018,NDNI_2018,CHM_2018)
+                   CAI_2018,CELL_2018,CELL2_2018,NDNI_2018, CHM_2018)
 NEON_2017 <- stack(NDVI_2017,NDWI_2017,PRI_2017,SWIRI_2017,SAVI_2017, 
                    PRI2_2017,CACTI_2017,CACTI2_2017,MTCI_2017,CI_2017,
-                   CAI_2017,CELL_2017,CELL2_2017,NDNI_2017,CHM_2017)
+                   CAI_2017,CELL_2017,CELL2_2017,NDNI_2017, CHM_2017)
 
 
 
-crop <- shapefile("D:/projects/RaBET/RaBET_species/NEON_FINAL/SRER/Outputs/crop.shp")
-plot(crop)
-e <- extent(crop)
 
-
+#crop layers based on study area extent
 NEON_2021_crop <- crop(NEON_2021, e) 
 NEON_2020_crop <- crop(NEON_2020, e) 
 NEON_2019_crop <- crop(NEON_2019, e) 
 NEON_2018_crop <- crop(NEON_2018, e) 
 NEON_2017_crop <- crop(NEON_2017, e)
 
-
+#mask based on study area extent
 NEON_2021_mask <- mask(NEON_2021_crop, crop)
 NEON_2020_mask <- mask(NEON_2020_crop, crop)
 NEON_2019_mask <- mask(NEON_2019_crop, crop)
@@ -194,7 +193,7 @@ NEON_2017_mask <- mask(NEON_2017_crop, crop)
 
 
 gc()
-
+#export
 writeRaster(NEON_2021_mask, filename = "NEON_SRER_indices_2021_mask.tif",overwrite=TRUE)
 writeRaster(NEON_2020_mask, filename = "NEON_SRER_indices_2020_mask.tif",overwrite=TRUE)
 writeRaster(NEON_2019_mask, filename = "NEON_SRER_indices_2019_mask.tif",overwrite=TRUE)
@@ -209,6 +208,37 @@ writeRaster(NEON_2017_mask, filename = "NEON_SRER_indices_2017_mask.tif",overwri
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#might be needed
 NEON_2021_extent <- setExtent(NEON_2021_mask, e)
 NEON_2021_resample <- resample(NEON_2021_mask, NDVI_2021)
 NEON_2020_extent <- setExtent(NEON_2020_mask, e)
@@ -220,25 +250,12 @@ NEON_2018_resample <- resample(NEON_2018_mask, NDVI_2021)
 NEON_2017_extent <- setExtent(NEON_2017_mask, e)
 NEON_2017_resample <- resample(NEON_2017_mask, NDVI_2021)
 
-names(NEON_2018_resample) <- c('NDVI_2018','NDWI_2018','PRI_2018','SWIRI_2018','SAVI_2018',
-                         'PRI2_2018','CACTI_2018','CACTI2_2018','MTCI_2018','CI_2018',
-                         'CAI_2018','CELL_2018','CELL2_2018','NDNI_2018','CHM_2018')
+#NDRE_2018 <- setExtent(NDRE_2018, NDVI_2018)
+#NDRE_2018 <- resample(NDRE_2018, NDVI_2018)
 
-gc()
-NEON_indices <- stack(NEON_2021_resample, NEON_2019_resample, NEON_2018_resample, NEON_2017_resample)
-
+#SPRUCE_2018 <- setExtent(SPRUCE_2018, NDVI_2018)
+#SPRUCE_2018 <- resample(SPRUCE_2018, NDVI_2018)
 
 
-
-
-names(NEON_indices) <- c('NDVI_2020','NDWI_2020','PRI_2020','SWIRI_2020','SAVI_2020',
-                         'PRI2_2020','CACTI_2020','CACTI2_2020','MTCI_2020','CI_2020',
-                         'CAI_2020','CELL_2020','CELL2_2020','NDNI_2020','CHM_2020',
-                         'NDVI_2019','NDWI_2019','PRI_2019','SWIRI_2019','SAVI_2019',
-                         'PRI2_2019','CACTI_2019','CACTI2_2019','MTCI_2019','CI_2019',
-                         'CAI_2019','CELL_2019','CELL2_2019','NDNI_2019','CHM_2019',
-                         'NDVI_2018','NDWI_2018','PRI_2018','SWIRI_2018','SAVI_2018',
-                         'PRI2_2018','CACTI_2018','CACTI2_2018','MTCI_2018','CI_2018',
-                         'CAI_2018','CELL_2018','CELL2_2018','NDNI_2018','CHM_2018',
-)
-
+#CONIFER_2018 <- setExtent(CONIFER_2018, NDVI_2018)
+#CONIFER_2018 <- resample(CONIFER_2018, NDVI_2018)

@@ -14,45 +14,40 @@ library(broom)
 library(caret)
 library(terra)
 library(dismo)
+library(star)
 #install.packages("e1071")
 #library(C50)
-setwd("//snow/projects/RaBET/RaBET_species/NEON_FINAL/SRER/")
-setwd("//snow/projects/RaBET/RaBET_species/NEON_FINAL/SRER/FinalOutputs")
-NEON_2017_indices <-stack("//snow/projects/RaBET/RaBET_species/NEON_FINAL/SRER/FinalOutputs/NEON_SRER_indices_2017_mask.tif") 
-NEON_2019_indices <-stack("//snow/projects/RaBET/RaBET_species/NEON_FINAL/SRER/FinalOutputs/NEON_SRER_indices_2019_mask.tif") 
-NEON_2021_indices <-stack("//snow/projects/RaBET/RaBET_species/NEON_FINAL/SRER/FinalOutputs/NEON_SRER_indices_2021_mask.tif") 
-NEON_2018_indices <-stack("//snow/projects/RaBET/RaBET_species/NEON_FINAL/SRER/FinalOutputs/NEON_SRER_indices_2018_mask.tif") 
-
-NEON_indices <- stack(NEON_2021_indices,NEON_2018_indices,NEON_2017_indices)
-
-names(NEON_indices) <- c('NDVI_2021','NDWI_2021','PRI_2021','SWIRI_2021','SAVI_2021',
-                         'PRI2_2021','CACTI_2021','CACTI2_2021','MTCI_2021','CI_2021',
-                         'CAI_2021','CELL_2021','CELL2_2021','NDNI_2021','CHM_2021',
-                         'NDVI_2018','NDWI_2018','PRI_2018','SWIRI_2018','SAVI_2018',
+setwd("//snow/projects/RaBET/RaBET_species/RESULTS/WGEW/")
+NEON_2018_indices <-stack("//snow/projects/RaBET/RaBET_species/RESULTS/WGEW/WGER_indices_mask_2018.tif") 
+NEON_indices <- stack(NEON_2018_indices)
+crs(NEON_2018_indices)
+crs(NEON_indices)
+names(NEON_indices) <- c('NDVI_2018','NDWI_2018','PRI_2018','SWIRI_2018','SAVI_2018',
                          'PRI2_2018','CACTI_2018','CACTI2_2018','MTCI_2018','CI_2018',
-                         'CAI_2018','CELL_2018','CELL2_2018','NDNI_2018','CHM_2018',
-                         'NDVI_2017','NDWI_2017','PRI_2017','SWIRI_2017','SAVI_2017',
-                         'PRI2_2017','CACTI_2017','CACTI2_2017','MTCI_2017','CI_2017',
-                         'CAI_2017','CELL_2017','CELL2_2017','NDNI_2017','CHM_2017')
+                         'CAI_2018','CELL_2018','CELL2_2018','NDNI_2018','CONIER_2018','SPRUCE_2018', 'NDRE_2018','CHM_2018')
 gc()
-gc()
-
+plot(NEON_2018_indices)
+plot(NEON_indices)
 #POINTS
 memory.limit(size=2620330)
 memory.size()
 ##TRAINING DATA
 #trainPoints <- shapefile("P:/RaBET/Subset/training/trainPoints_071321.shp")
-trainPoints <- shapefile("//snow/projects/RaBET/RaBET_species/NEON_FINAL/SRER/Training/TrainData0913_PlusAC/TrainData0913PlusAC.shp") #when creating Pointsgons, make sure to create a code column as a double.
+trainPoints <- shapefile("//snow/projects/RaBET/RaBET_species/RESULTS/WGEW/training_WGER.shp") #when creating Pointsgons, make sure to create a code column as a double.
+
+
 ###TRAINING DATA
-trainPoints <- spTransform(trainPoints, crs(NEON_indices)) #making sure scenes overlap crs
-trainPoints$Code
+trainPoints <- sp::spTransform(trainPoints, sp::CRS(NEON_indices))
+
+#find class column
+trainPoints$Id
 #make column numeric for rasterization
-trainPoints$Code <- as.numeric(trainPoints$Code)
+trainPoints$Id <- as.numeric(trainPoints$Id)
 #creating a raster of classes with similar resolution as training rasters
 
 ptm <- proc.time()
 
-classesPoints <- rasterize(trainPoints, NEON_indices, field = "Code") 
+classesPoints <- rasterize(trainPoints, NEON_indices, field = "Id") 
 
 proc.time() - ptm
 
@@ -61,8 +56,10 @@ names(classesPoints) <- "class"
 gc()
 
 
+
+
 ###MASK PARALLEL
-#mask training rasters with rasterized training Pointsgons
+#mask training rasters with rasterized training Points
 ptm <- proc.time()
 # Start by defining the function that does the work 
 mask_layer <- function(layer, mask) {
@@ -111,6 +108,8 @@ gc()
 
 
 trainData_indices <- getValues(trainingstack_indices)
+
+
 stopCluster(cl)
 
 
@@ -123,34 +122,12 @@ gc()
 trainData_indices$class
 #writeRaster(trainingstack_indices, filename ="trainingstack_indices_MNDWI.tif" )
 
-write.csv(trainData_indices, file= "SRERtrainingindices_012823_with2018_no2019.csv")
+write.csv(trainData_indices, file= "WGEW_trainingindices_02152023_2018.csv")
 # Shut the cluster off 
 
 
 
-
 getwd()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 proc.time() - ptm
 getwd()
@@ -158,7 +135,37 @@ getwd()
 rm(list = c('trainingstack_indices','NEON_2018_subset_mask','masked_list'))
 gc()
 
-##Clean dataset
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##Clean dataset####
 trainData_indices <- read.csv("P:/RaBET/Results/trainingstack_indices_101221.csv")
 
 val_bareground <- subset(trainData_indices, class == 1)
@@ -244,7 +251,43 @@ write.csv(trainData_indices, file= "trainData_10042121_clean_ac.csv")
 
 
 
-###GET TRAINING DATA
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+###GET TRAINING DATA *****old methods****#####
 ptm <- proc.time()
 
 NEON_indices_mask <- mask(NEON_indices, classesPoints) 
